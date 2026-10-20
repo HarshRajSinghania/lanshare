@@ -34,6 +34,7 @@ Tests chalao (server ke bina, ye standalone hain):
 
 ```bash
 python -m py_compile lanshare.py   # syntax
+pip install pytest && pytest test_unit.py   # unit tests for pure helpers
 ```
 
 Manual test: `python lanshare.py` → QR scan → phone par bhejo.
@@ -52,6 +53,7 @@ Manual test: `python lanshare.py` → QR scan → phone par bhejo.
 ### PR checklist
 
 - [ ] `python -m py_compile lanshare.py` clean hai
+- [ ] `pytest test_unit.py` passes (if pure helpers changed)
 - [ ] Feature kaam karta hai — phone/PC dono par manually check kiya
 - [ ] README zaroorat pade to update kiya
 - [ ] Koi personal path/secret commit nahi hua (Received/ ignored hai)
