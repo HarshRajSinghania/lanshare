@@ -1,0 +1,19 @@
+# runtime data — yahan aayi files kabhi commit nahi hongi
+Received/
+*.log
+test.log
+boot.log
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+*.spec
+
+# os junk
+Thumbs.db
+desktop.ini
+.DS_Store
