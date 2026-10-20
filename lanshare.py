@@ -114,6 +114,31 @@ def lan_ipv4s():
         [(ip, found[ip]) for ip in ips]
 
 
+def print_qr_terminal(url):
+    """Terminal QR — bina ANSI codes ke, Unicode half-blocks se.
+    segno.terminal() Windows cmd par escape-code garbage deta hai;
+    ye printer har console mein sahi chhapta hai (width ~42 cols)."""
+    qr = segno.make(url, error="m")
+    m = [list(row) for row in qr.matrix]
+    pad = 2  # quiet zone
+    w = len(m[0]) + pad * 2
+    empty = [False] * w
+    rows = [[False] * w for _ in range(pad)]
+    for row in m:
+        rows.append([False] * pad + row + [False] * pad)
+    rows += [[False] * w for _ in range(pad)]
+
+    print()
+    for y in range(0, len(rows), 2):
+        top = rows[y]
+        bot = rows[y + 1] if y + 1 < len(rows) else empty
+        line = "".join("\u2588" if a and b else "\u2580" if a else
+                       "\u2584" if b else " "
+                       for a, b in zip(top, bot))
+        print("  " + line)
+    print()
+
+
 def fix_firewall(port):
     if not sys.platform.startswith("win"):
         return
@@ -1036,11 +1061,10 @@ def main():
     print()
 
     try:
-        qr = segno.make(f"http://{primary}:{_PORT}/?token={TOKEN}", error="m")
-        qr.terminal(quiet=1)
-    except Exception:
-        pass
-    print()
+        print_qr_terminal(f"http://{primary}:{_PORT}/?token={TOKEN}")
+    except Exception as e:
+        print(f"  (QR print nahi hua: {e} — upar wala URL use karo)")
+        print()
 
     if a.fix_firewall:
         fix_firewall(_PORT)
@@ -1052,8 +1076,17 @@ def main():
         except Exception:
             pass
 
-    web.run_app(app, host="0.0.0.0", port=_PORT, print=None,
-                handle_signal=True)
+    try:
+        web.run_app(app, host="0.0.0.0", port=_PORT, print=None,
+                    handle_signal=True)
+    except OSError as e:
+        if getattr(e, "errno", None) == 10048 or "10048" in str(e):
+            print(f"\n  [X] Port {_PORT} pehle se busy hai.")
+            print("      Koi purana LAN Share instance chal raha ho sakta hai.")
+            print(f"      Usse band karo ya naya port do:"
+                  f"  python lanshare.py --port {_PORT + 1}\n")
+        else:
+            raise
 
 
 if __name__ == "__main__":
